@@ -1,80 +1,48 @@
-"""
-CMPS 2200  Recitation 2
-"""
-
-### the only imports needed are here
 import tabulate
 import time
-###
 
 def simple_work_calc(n, a, b):
-	"""Compute the value of the recurrence $W(n) = aW(n/b) + n
-
-	Params:
-	n......input integer
-	a......branching factor of recursion tree
-	b......input split factor
-
-	Returns: the value of W(n).
-	"""
-	# TODO
-	pass
+  if n == 1:
+    return a * 1 - n
+  else:
+    return a * simple_work_calc((n // b), a, b) + n
 
 def test_simple_work():
-	""" done. """
-	assert work_calc(10, 2, 2) == #TODO
-	assert work_calc(20, 3, 2) == #TODO
-	assert work_calc(30, 4, 2) == #TODO
+
+  assert simple_work_calc(10, 2, 2) == 36
+  assert simple_work_calc(20, 3, 2) == 311
+  assert simple_work_calc(30, 4, 2) == 1162
+
+  assert simple_work_calc(20, 4, 2) == 1036
+  assert simple_work_calc(40, 6, 2) == 43072
+  assert simple_work_calc(60, 8, 2) == 246508
 
 def work_calc(n, a, b, f):
-	"""Compute the value of the recurrence $W(n) = aW(n/b) + f(n)
-
-	Params:
-	n......input integer
-	a......branching factor of recursion tree
-	b......input split factor
-	f......a function that takes an integer and returns 
-           the work done at each node 
-
-	Returns: the value of W(n).
-	"""
-	# TODO
-	pass
+  if n == 1:
+    return a * 1 - f(n)
+  else:
+    return a * work_calc((n // b), a, b, f) + f(n)
 
 def span_calc(n, a, b, f):
-	"""Compute the span associated with the recurrence $W(n) = aW(n/b) + f(n)
-
-	Params:
-	n......input integer
-	a......branching factor of recursion tree
-	b......input split factor
-	f......a function that takes an integer and returns 
-           the work done at each node 
-
-	Returns: the value of W(n).
-	"""
-	# TODO
-	pass
+  if n == 1:
+    return a * 1 - f(n)
+  else:
+    return work_calc((n // b), a, b, f) // a + f(n)
 
 def test_work():
-	""" done. """
-	assert work_calc(10, 2, 2,lambda n: 1) == #TODO
-	assert work_calc(20, 1, 2, lambda n: n*n) == #TODO
-	assert work_calc(30, 3, 2, lambda n: n) == #TODO
+  assert work_calc(10, 2, 2, lambda n: 1) == 15
+  assert work_calc(20, 1, 2, lambda n: n*n) == 529
+  assert work_calc(30, 3, 2, lambda n: n) == 381
 
+  assert work_calc(20, 4, 2,lambda n: 1) == 853
+  assert work_calc(40, 2, 2, lambda n: n*n) == 3096
+  assert work_calc(60, 6, 2, lambda n: n) == 45060
+
+### COMPARE_WORK MODIFICAION IMPLMENTED IN TEST_COMPARE_WORK ###
 def compare_work(work_fn1, work_fn2, sizes=[10, 20, 50, 100, 1000, 5000, 10000]):
-	"""
-	Compare the values of different recurrences for 
-	given input sizes.
 
-	Returns:
-	A list of tuples of the form
-	(n, work_fn1(n), work_fn2(n), ...)
-	
-	"""
 	result = []
-	for n in input_sizes:
-		# compute W(n) using current a, b, f
+	for n in sizes:
 		result.append((
 			n,
 			work_fn1(n),
@@ -83,21 +51,42 @@ def compare_work(work_fn1, work_fn2, sizes=[10, 20, 50, 100, 1000, 5000, 10000])
 	return result
 
 def print_results(results):
-	""" done """
 	print(tabulate.tabulate(results,
 							headers=['n', 'W_1', 'W_2'],
 							floatfmt=".3f",
 							tablefmt="github"))
 
 def test_compare_work():
-	# curry work_calc to create multiple work
-	# functions taht can be passed to compare_work
-    
-	# create work_fn1
-	# create work_fn2
 
-    res = compare_work(work_fn1, work_fn2)
-	print(res)
+  f1 = lambda n: work_calc(n, 3, 2, lambda n: 1)
+  fn = lambda n: work_calc(n, 3, 2, lambda n: n)
+  fnn = lambda n: work_calc(n, 3, 2, lambda n: n*n)
+
+  print("\n W(n) where f(n)=1 is compared to f(n)=n")
+  res = compare_work(f1, fn)
+  print_results(res)
+
+  print("\n W(n) where f(n)=1 is compared to f(n)=n^2")
+  res = compare_work(f1, fnn)
+  print_results(res)
+
+  print("\n W(n) where f(n)=n is compared to f(n)=n^2")
+  res = compare_work(fn, fnn)
+  print_results(res)
+
+def print_results_span(results):
+	print(tabulate.tabulate(results,
+							headers=['1', '2', '4', '8', '16'],
+							floatfmt=".3f",
+							tablefmt="github"))
 
 def test_compare_span():
-	# TODO
+    n_list = list()
+    for n in [10, 20, 50, 100, 1000, 5000, 10000]:
+        p_list = [n]
+        for processor in [1, 2, 4, 8, 16]:
+            s = span_calc(n, processor, 2, lambda n: n)
+            p_list.append(s)
+        n_list.append(p_list)
+    print_results_span(n_list)
+  
